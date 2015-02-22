@@ -1,5 +1,7 @@
 # Dialect
 
+[![Build Status](https://travis-ci.org/darrylkuhn/dialect.svg?branch=master)](https://travis-ci.org/darrylkuhn/dialect)
+
 Dialect provides JSON datatype support for the [Eloquent ORM](http://laravel.com/docs/eloquent).
 
 ## Installation
