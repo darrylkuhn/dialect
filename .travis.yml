@@ -12,6 +12,6 @@ before_script:
     - composer self-update
     - composer install --prefer-dist --no-interaction
 
-script: phpunit --coverage-clover build/logs/clover.xml
+script: ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
 
-script: CODECLIMATE_REPO_TOKEN=a8b5ee59cd6658ea5710614ec4285cdc81084aeee33f531bd30d1e317c88257c ./vendor/bin/test-reporter
+after_script: CODECLIMATE_REPO_TOKEN=a8b5ee59cd6658ea5710614ec4285cdc81084aeee33f531bd30d1e317c88257c ./vendor/bin/test-reporter
