@@ -23,7 +23,7 @@ trait Json
      *
      * @return void
      */
-    public static function bootEloquentJSON()
+    public static function bootJson()
     {
         self::loading(function($obj)
         {
