@@ -3,7 +3,7 @@
 class JsonDialectTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * Assert that defined JSON attributes are properly parsed and given.
+     * Assert that defined JSON attributes are properly parsed and exposed through mutators.
      */
     public function testInspectJsonColumns()
     {
@@ -21,5 +21,37 @@ class JsonDialectTest extends PHPUnit_Framework_TestCase
         $this->assertContains('foo', $mock->getMutatedAttributes());
         $this->assertContains('testColumn', $mock->getHidden());
         $this->assertEquals($mock->foo, 'bar');
+    }
+
+    /**
+     * Assert that JSON attributes can be set through mutators
+     */
+    public function testSetAttribute()
+    {
+        // Mock the model with data
+        $mock = new MockJsonDialectModel;
+        $mock->setJsonColumns(['testColumn']);
+        $mock->setAttribute('testColumn', json_encode(['foo' => 'bar']));
+
+        // Execute the insepect call
+        $mock->inspectJsonColumns();
+
+        $mock->foo = 'baz';
+        $mock->setJsonAttribute('testColumn', 'fizz', 'buzz');
+
+        // Assert that the column were properly parsed and various bits have
+        // been set on the model
+        $this->assertEquals($mock->foo, 'baz');
+        $this->assertEquals($mock->fizz, 'buzz');
+    }
+
+    /**
+     * Assert that attributes with JSON operators are properly recognized as JSON attributes
+     */
+    public function testGetMutator()
+    {
+        // Mock the model with data
+        $mock = new MockJsonDialectModel;
+        $this->assertTrue( $mock->hasGetMutator("testColumn->>'foo'") );
     }
 }

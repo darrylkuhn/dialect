@@ -19,7 +19,7 @@ trait Json
     private $jsonAttributes = [];
 
     /**
-     * Boot the EloquentJSON trait for a model.
+     * Boot the Json trait for a model.
      *
      * @return void
      */
@@ -164,6 +164,7 @@ trait Json
     {
         $obj = json_decode($this->{$attribute});
         $obj->$key = $value;
+        $this->flagJsonAttribute($key, $attribute);
         $this->{$attribute} = json_encode($obj);
         return;
     }
