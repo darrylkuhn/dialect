@@ -25,7 +25,7 @@ trait Json
      */
     public static function bootJson()
     {
-        self::loading(function($obj)
+        self::creating(function($obj)
         {
             $obj->inspectJsonColumns();
         });
