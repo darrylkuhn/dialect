@@ -18,18 +18,20 @@ trait Json
      */
     private $jsonAttributes = [];
 
-    /**
-     * Boot the Json trait for a model.
-     *
-     * @return void
-     */
-    public static function bootJson()
-    {
-        self::loading(function($obj)
-        {
-            $obj->inspectJsonColumns();
-        });
-    }
+	/**
+	 * Create a new model instance that is existing.
+	 * Overrides parent to set Json columns.
+	 *
+	 * @param  array  $attributes
+	 * @param  string|null  $connection
+	 * @return static
+	 */
+	public function newFromBuilder($attributes = array(), $connection = null)
+	{
+		$model = parent::newFromBuilder($attributes, $connection);
+		$model->inspectJsonColumns();
+		return $model;
+	}
 
     /**
      * Decodes each of the declared JSON attributes and records the attributes
