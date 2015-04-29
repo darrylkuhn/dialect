@@ -52,6 +52,6 @@ class JsonDialectTest extends PHPUnit_Framework_TestCase
     {
         // Mock the model with data
         $mock = new MockJsonDialectModel;
-        $this->assertTrue( $mock->hasGetMutator("testColumn->>'foo'") );
+        $this->assertTrue($mock->hasGetMutator("testColumn->>'foo'"));
     }
 }
