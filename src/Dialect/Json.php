@@ -1,5 +1,7 @@
 <?php namespace Eloquent\Dialect;
 
+use stdClass;
+
 trait Json
 {
     /**
@@ -52,6 +54,7 @@ trait Json
                 }
             }
         }
+
     }
 
     /**
@@ -128,7 +131,9 @@ trait Json
 
         if (array_key_exists($key, $this->jsonAttributes) != false) {
             $obj = json_decode($this->{$this->jsonAttributes[$key]});
-            return $obj->$key;
+            if($obj)
+                return $obj->$key;
+            return null;
         } elseif ($isJson) {
             return null;
         }
@@ -165,9 +170,14 @@ trait Json
     public function setJsonAttribute($attribute, $key, $value)
     {
         $obj = json_decode($this->{$attribute});
-        $obj->$key = $value;
-        $this->flagJsonAttribute($key, $attribute);
-        $this->{$attribute} = json_encode($obj);
+        if(!is_object($obj))
+            $obj = new stdClass;
+        // only set this if $value isn't null.
+        if(!is_null($value) ) {
+            $obj->$key = $value;
+            $this->flagJsonAttribute($key, $attribute);
+            $this->{$attribute} = json_encode($obj);
+        }
         return;
     }
 }
