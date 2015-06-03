@@ -131,8 +131,9 @@ trait Json
 
         if (array_key_exists($key, $this->jsonAttributes) != false) {
             $obj = json_decode($this->{$this->jsonAttributes[$key]});
-            if($obj)
+            if($obj && isset($obj->$key)) {
                 return $obj->$key;
+            }
             return null;
         } elseif ($isJson) {
             return null;
