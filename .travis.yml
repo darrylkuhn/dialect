@@ -1,18 +1,17 @@
+before_script: 
+  - ./configureComposer.sh
+  - composer self-update
+  - composer install --prefer-dist --no-interaction
+php: 
+  - 5.5
+  - 5.6
+  - hhvm
 language: php
-
-php:
-    - 5.5
-    - 5.6
-    - hhvm
-
-matrix:
-    allow_failures:
-        - php: hhvm
-
-before_script:
-    - composer self-update
-    - composer install --prefer-dist --no-interaction
-
-script: ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-
 after_script: CODECLIMATE_REPO_TOKEN=a8b5ee59cd6658ea5710614ec4285cdc81084aeee33f531bd30d1e317c88257c ./vendor/bin/test-reporter
+script: ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+env: 
+  global: 
+    secure: uuQ9h1nIwseYMpOBV+j+kOqgD/mPkfMk411b/jxvM0c0u4b9E2q7aep238IDUxqDLFBV4QwGWJobgSBdu/bpm0GQC29CYHhgw+DVceCZ6VlcStTwVvX+XfyBBOVn/KTbEZQapC1lsGneBEzKzp9esUqYW3uOjJPeA9ah20zjV2c=
+matrix: 
+  allow_failures: 
+  - php: hhvm
