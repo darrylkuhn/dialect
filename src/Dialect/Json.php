@@ -173,12 +173,10 @@ trait Json
         $obj = json_decode($this->{$attribute});
         if(!is_object($obj))
             $obj = new stdClass;
-        // only set this if $value isn't null.
-        if(!is_null($value) ) {
-            $obj->$key = $value;
-            $this->flagJsonAttribute($key, $attribute);
-            $this->{$attribute} = json_encode($obj);
-        }
+        
+        $obj->$key = $value;
+        $this->flagJsonAttribute($key, $attribute);
+        $this->{$attribute} = json_encode($obj);
         return;
     }
 }
