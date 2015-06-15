@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/darrylkuhn/dialect.svg?branch=master)](https://travis-ci.org/darrylkuhn/dialect) [![Code Climate](https://codeclimate.com/github/darrylkuhn/dialect/badges/gpa.svg)](https://codeclimate.com/github/darrylkuhn/dialect) [![Test Coverage](https://codeclimate.com/github/darrylkuhn/dialect/badges/coverage.svg)](https://codeclimate.com/github/darrylkuhn/dialect)
 
-Dialect provides JSON datatype support for the [Eloquent ORM](http://laravel.com/docs/eloquent).
+Dialect provides JSON datatype support for the [Eloquent ORM](http://laravel.com/docs/eloquent). At this point this implementation is pretty bare bones and has been demonstrated to work with PostgreSQL and MySQL. There are lots of opportunities to enhance and improve. If you're interested in contributing please submit merge/pull requests.
 
 ## Installation
 
@@ -35,7 +35,7 @@ $photo->key = value;
 ```
 Also when calling the toArray() method the attributes are moved to the top level and the 'json_attributes' column is hidden. This essentially hides away the fact that you're using the json datatype and makes it look like we're working with attributes directly.
  
-You can also establish relationships on a model like this:
+You can also establish relationships on a model like this (only supported in PostgreSQL):
 ```php
 public function user()
 {
@@ -46,4 +46,3 @@ The one caveat is when you're setting an attribute not previously set already in
 ```php
 $referral->setJsonAttribute( 'additional_details', 'fizz', 'buzz' );
 ```
-At this point this implementation is pretty bare bones and only supports PostgreSQL. There are lots of opportunities to enhance and improve. If you're interested in contributing please submit merge/pull requests.
