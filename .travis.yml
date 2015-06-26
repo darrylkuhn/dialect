@@ -1,17 +1,29 @@
-before_script: 
-  - ./configureComposer.sh
-  - composer self-update
-  - composer install --prefer-dist --no-interaction
-php: 
+language: php
+
+php:
+  - 5.4
   - 5.5
   - 5.6
+  - 7.0
   - hhvm
-language: php
-after_script: CODECLIMATE_REPO_TOKEN=a8b5ee59cd6658ea5710614ec4285cdc81084aeee33f531bd30d1e317c88257c ./vendor/bin/test-reporter
-script: ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-env: 
-  global: 
+
+env:
+  global:
     secure: uuQ9h1nIwseYMpOBV+j+kOqgD/mPkfMk411b/jxvM0c0u4b9E2q7aep238IDUxqDLFBV4QwGWJobgSBdu/bpm0GQC29CYHhgw+DVceCZ6VlcStTwVvX+XfyBBOVn/KTbEZQapC1lsGneBEzKzp9esUqYW3uOjJPeA9ah20zjV2c=
-matrix: 
-  allow_failures: 
-  - php: hhvm
+
+after_script:
+  - ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+  - CODECLIMATE_REPO_TOKEN=a8b5ee59cd6658ea5710614ec4285cdc81084aeee33f531bd30d1e317c88257c ./vendor/bin/test-reporter
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: 7.0
+    - php: hhvm
+
+before_script:
+  - travis_retry composer self-update
+  - travis_retry composer install --no-interaction --prefer-source
+
+script:
+  - vendor/bin/phpunit --verbose
