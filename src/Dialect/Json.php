@@ -43,10 +43,8 @@ trait Json
     {
         $values = parent::toArray();
 
-        foreach ($values as $key=>$value)
-        {
-            if (in_array($key, $this->jsonAttributes))
-            {
+        foreach ($values as $key=>$value) {
+            if (in_array($key, $this->jsonAttributes)) {
                 $values[$key] = json_decode($value);
             }
         }
