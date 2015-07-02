@@ -34,6 +34,27 @@ trait Json
     }
 
     /**
+     * Converts the model to an array
+     * Overrides parent to decode JSON columns.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $values = parent::toArray();
+
+        foreach ($values as $key=>$value)
+        {
+            if (in_array($key, $this->jsonAttributes))
+            {
+                $values[$key] = json_decode($value);
+            }
+        }
+
+        return $values;
+    }
+    
+    /**
      * Decodes each of the declared JSON attributes and records the attributes
      * on each
      *
@@ -42,7 +63,6 @@ trait Json
     public function inspectJsonColumns()
     {
         foreach ($this->jsonColumns as $col) {
-            $this->hidden[] = $col;
             $obj = json_decode($this->$col);
 
             if (is_object($obj)) {
