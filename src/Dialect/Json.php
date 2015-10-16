@@ -19,6 +19,11 @@ trait Json
     private $jsonAttributes = [];
 
     /**
+     * @var array
+     */
+    private $hintedJsonAttributes = [];
+
+    /**
      * Create a new model instance that is existing.
      * Overrides parent to set Json columns.
      *
@@ -30,6 +35,7 @@ trait Json
     {
         $model = parent::newFromBuilder($attributes, $connection);
         $model->inspectJsonColumns();
+        $model->addHintedAttributes();
         return $model;
     }
 
@@ -55,10 +61,54 @@ trait Json
     }
 
     /**
+     * Schema free data architecture give us tons of flexibility (yay) but
+     * makes it hard to inspect a structure and build getters/setters.
+     * Therefore you can "hint" the structure to make life easier.
+     *
+     * @return void
+     */
+    public function addHintedAttributes()
+    {
+        foreach ($this->hintedJsonAttributes as $col => $structure) {
+            $this->hidden[] = $col;
+
+            if (json_decode($structure) === null) {
+                throw new InvalidJsonException;
+            }
+
+            $obj = json_decode($structure);
+
+            if (is_object($obj)) {
+                foreach ($obj as $key => $value) {
+                    $this->flagJsonAttribute($key, $col);
+                    $this->appends[] = $key;
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets a hint for a given column
+     *
+     * @param  string $column name of column that we're hinting
+     * @param  string $structure json encoded structure
+     * @return void
+     * @throws InvalidJsonException
+     */
+    public function hintJsonStructure( $column, $structure )
+    {
+        if (json_decode($structure) === null) {
+            throw new InvalidJsonException;
+        }
+
+        $this->hintedJsonAttributes[$column] = $structure;
+    }
+
+    /**
      * Record that a given JSON element is found on a particular column
      *
-     * @param string $key
-     * @param string $col
+     * @param string $key attribute name within the JSON column
+     * @param string $col name of JSON column
      *
      * @return void
      */
@@ -115,7 +165,6 @@ trait Json
         $jsonPattern  = '/' . implode('|', self::$jsonOperators) . '/' ;
 
         // Test for JSON operators and reduce to end element
-        /* TODO: This only really works for 1-level deep. Should it be more? */
         $isJson = false;
 
         if (preg_match($jsonPattern, $key)) {
@@ -127,7 +176,13 @@ trait Json
         }
 
         if (array_key_exists($key, $this->jsonAttributes) != false) {
-            $obj = json_decode($this->{$this->jsonAttributes[$key]});
+            $value = $this->{$this->jsonAttributes[$key]};
+            if ( $value === null ) {
+                return null;
+            }
+            else {
+                $obj = json_decode($this->{$this->jsonAttributes[$key]});
+            }
             return $obj->$key;
         } elseif ($isJson) {
             return null;
@@ -164,7 +219,16 @@ trait Json
      */
     public function setJsonAttribute($attribute, $key, $value)
     {
-        $obj = json_decode($this->{$attribute});
+        // Pull the attribute and decode it
+        $obj = json_decode( $this->{$attribute} );
+
+        // It's possible the attribute doesn't exist yet (since we can hint at
+        // structure). In that case we build an object to set values on as a
+        // starting point
+        if ( $obj === null ) {
+            $obj = json_decode( '{}' );
+        }
+
         $obj->$key = $value;
         $this->flagJsonAttribute($key, $attribute);
         $this->{$attribute} = json_encode($obj);
