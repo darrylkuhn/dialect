@@ -3,7 +3,9 @@
 trait Json
 {
     /**
-     * List of known PSQL JSON operators
+     * List of known PSQL JSON operators. This is used when determining if
+     * a column reference matches that of a JSON pattern (e.g.
+     * test_column->>'value')
      *
      * @var array
      */
@@ -14,14 +16,38 @@ trait Json
         '#>>' ];
 
     /**
+     * Holds the map of attributes and the JSON colums they are stored in.
+     *
      * @var array
      */
     private $jsonAttributes = [];
 
     /**
+     * Holds a list of column names and the structure they *may* contain (e.g.
+     * ['json_column' => "{'foo':null}"]
+     *
      * @var array
      */
     private $hintedJsonAttributes = [];
+
+    /**
+     * By default this trait will hide the json columns when rendering the
+     * model using toArray() or toJson() only exposing the underlying JSON
+     * parameters as top level paremters on the model. Set this parameter to
+     * true if you want to change that behavior.
+     *
+     * @var boolean
+     */
+    private $showJsonColumns = false;
+
+    /**
+     * By default this trait will append the json attributes when rendering the
+     * model using toArray() or toJson(). Set this parameter to false if you
+     * want to change that behavior.
+     *
+     * @var boolean
+     */
+    private $showJsonAttributes = true;
 
     /**
      * Create a new model instance that is existing.
@@ -48,13 +74,17 @@ trait Json
     public function inspectJsonColumns()
     {
         foreach ($this->jsonColumns as $col) {
-            $this->hidden[] = $col;
+            if ( !$this->showJsonColumns ) {
+                $this->hidden[] = $col;
+            }
             $obj = json_decode($this->$col);
 
             if (is_object($obj)) {
                 foreach ($obj as $key => $value) {
                     $this->flagJsonAttribute($key, $col);
-                    $this->appends[] = $key;
+                    if ( $this->showJsonAttributes ) {
+                        $this->appends[] = $key;
+                    }
                 }
             }
         }
@@ -70,7 +100,9 @@ trait Json
     public function addHintedAttributes()
     {
         foreach ($this->hintedJsonAttributes as $col => $structure) {
-            $this->hidden[] = $col;
+            if ( !$this->showJsonColumns ) {
+                $this->hidden[] = $col;
+            }
 
             if (json_decode($structure) === null) {
                 throw new InvalidJsonException;
@@ -81,7 +113,9 @@ trait Json
             if (is_object($obj)) {
                 foreach ($obj as $key => $value) {
                     $this->flagJsonAttribute($key, $col);
-                    $this->appends[] = $key;
+                    if ( $this->showJsonAttributes ) {
+                        $this->appends[] = $key;
+                    }
                 }
             }
         }
@@ -156,9 +190,10 @@ trait Json
     /**
      * Check if the key is a known json attribute and return that value
      *
-     * @param  string  $key
-     * @param  mixed   $value
+     * @param  string $key
+     * @param  mixed  $value
      * @return mixed
+     * @throws  InvalidJsonException
      */
     protected function mutateAttribute($key, $value)
     {
@@ -176,15 +211,34 @@ trait Json
         }
 
         if (array_key_exists($key, $this->jsonAttributes) != false) {
+
+            // Get the content of the column associated with this JSON
+            // attribute and parse it into an object
             $value = $this->{$this->jsonAttributes[$key]};
-            if ( $value === null ) {
-                return null;
+            $obj = json_decode($this->{$this->jsonAttributes[$key]});
+
+            // Make sure we were able to parse the json. It's possible here
+            // that we've only hinted at an attribute and the column that will
+            // hold that attribute is actually null. This isn't really a parse
+            // error though the json_encode method will return null (just like)
+            // a parse error. To distenguish the two states see if the original
+            // value was null (indicating there was nothing there to parse in
+            // the first place)
+            if ( $value !== null && $obj === null ) {
+                throw new InvalidJsonException;
+            }
+
+            // Again it's possible the key will be in the jsonAttributes array
+            // (having been hinted) but not present on the actual record.
+            // Therefore test that the key is set before returning.
+            if ( isset($obj->$key) ) {
+                return $obj->$key;
             }
             else {
-                $obj = json_decode($this->{$this->jsonAttributes[$key]});
+                return null;
             }
-            return $obj->$key;
-        } elseif ($isJson) {
+        }
+        elseif ($isJson) {
             return null;
         }
 
@@ -233,5 +287,31 @@ trait Json
         $this->flagJsonAttribute($key, $attribute);
         $this->{$attribute} = json_encode($obj);
         return;
+    }
+
+    /**
+     * Allows you to specify if the actual JSON column housing the attributes
+     * should be shown on toArray() and toJson() calls. Set this value in the
+     * models constructor (to make sure it is set before newFromBuilder() is
+     * called). This is false by default
+     *
+     * @param  boolean $show
+     * @return boolean
+     */
+    public function showJsonColumns( $show ) {
+        return $this->showJsonColumns = $show;
+    }
+
+    /**
+     * Allows you to specify if the attributes within various json columns
+     * should be shown on toArray() and toJson() calls. Set this value in the
+     * models constructor (to make sure it is set before newFromBuilder() is
+     * called). This is true by default
+     *
+     * @param  boolean show
+     * @return boolean
+     */
+    public function showJsonAttributes( $show ) {
+        return $this->showJsonAttributes = $show;
     }
 }
