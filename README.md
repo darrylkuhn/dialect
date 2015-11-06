@@ -62,7 +62,7 @@ class Photo extends Eloquent
 ```
 Once you create a hint you will be able to make calls to get and set json attributes e.g. `$photo->foo = 'bar';` regardless of whether or not they are already defined in the underlying db record. Alternatly if you prefer not to hint structures then you may call `setJsonAttribute()`. For example if you defined a json column called "json_data" and wanted to set an attribute called 'fizz' so you could call:
 ```php
-$referral->setJsonAttribute( 'json_data', 'fizz', 'buzz' );
+$photo->setJsonAttribute( 'json_data', 'fizz', 'buzz' );
 ```
 ### Showing/Hiding Attributes
 One of the aims of the project is to make json attributes "first class" citizens of the model. This means by default we add the attributes to the models appends array so that when you call `$model->toArray()` or `$model->toJson()` the attribute shows up as a part of the structure like a normal attribute. By default we also hide away the json column holding the underlying data. Both of these settings can be changed using the `showJsonColumns()` and `showJsonAttributes()` as shown below:

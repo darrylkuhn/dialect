@@ -136,6 +136,11 @@ trait Json
         }
 
         $this->hintedJsonAttributes[$column] = $structure;
+
+        // Run the call to add hinted attributes to the internal json
+        // attributes array. This allows callers to get/set parameters when
+        // working with new models
+        $this->addHintedAttributes();
     }
 
     /**

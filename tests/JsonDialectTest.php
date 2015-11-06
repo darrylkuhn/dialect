@@ -73,8 +73,7 @@ class JsonDialectTest extends PHPUnit_Framework_TestCase
         $mock = new MockJsonDialectModel;
         $mock->hintJsonStructure( 'testColumn', json_encode(['foo'=>null]) );
 
-        // Execute the hint call
-        $mock->addHintedAttributes();
+        // Set testColumn to invalid json
         $mock->setAttribute('testColumn', '{');
 
         // Try to access a property on invalid json - we should get an
