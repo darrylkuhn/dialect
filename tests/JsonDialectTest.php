@@ -144,6 +144,26 @@ class JsonDialectTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Assert that defined JSON attributes are returned in the getDirty()
+     * response when expected.
+     */
+    public function testGetDirtyJson()
+    {
+        // Mock the model with data
+        $mock = new MockJsonDialectModel;
+        $mock->hintJsonStructure( 'testColumn', json_encode(['foo'=>null]) );
+
+        // At this point 'foo' should not be dirty
+        $this->assertArrayNotHasKey( 'foo', $mock->getDirty(true) );
+
+        $mock->setAttribute('testColumn', json_encode(['foo' => 'bar']));
+
+        // Now that 'foo' has been changed it should show up in the getDirty()
+        // response
+        $this->assertArrayHasKey( 'foo', $mock->getDirty(true) );
+    }
+
+    /**
      * Assert that an exception is thrown when given invalid json as a
      * structure hint
      *

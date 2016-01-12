@@ -16,7 +16,10 @@ trait Json
         '#>>' ];
 
     /**
-     * Holds the map of attributes and the JSON colums they are stored in.
+     * Holds the map of attributes and the JSON colums they are stored in. This
+     * will take the form of:
+     *  [ 'json_element_1' => 'original_column',
+     *    'json_element_2' => 'original_column' ]
      *
      * @var array
      */
@@ -247,7 +250,6 @@ trait Json
             return null;
         }
 
-
         return parent::mutateAttribute($key, $value);
     }
 
@@ -292,6 +294,34 @@ trait Json
         $this->flagJsonAttribute($key, $attribute);
         $this->{$attribute} = json_encode($obj);
         return;
+    }
+
+    /**
+     * Add json attributes to the list of things that have changed (when
+     * they've changed)
+     *
+     * @return Array
+     */
+    public function getDirty( $includeJson = false )
+    {
+        $dirty = parent::getDirty();
+
+        if ( !$includeJson ) {
+            return $dirty;
+        }
+
+        foreach (array_unique($this->jsonAttributes) as $attribute) {
+            $originals[$attribute] = json_decode(array_get($this->original,$attribute,'null'), true);
+        }
+
+        foreach ($this->jsonAttributes as $jsonAttribute => $jsonColumn) {
+            if ($this->$jsonAttribute !== null &&
+                $this->$jsonAttribute !== array_get($originals[$jsonColumn], $jsonAttribute)) {
+                $dirty[$jsonAttribute] = json_encode($this->$jsonAttribute);
+            }
+        }
+
+        return $dirty;
     }
 
     /**
