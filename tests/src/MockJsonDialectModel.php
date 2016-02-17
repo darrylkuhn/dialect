@@ -16,4 +16,14 @@ class MockJsonDialectModel extends Illuminate\Database\Eloquent\Model
     {
         $this->jsonColumns = $columns;
     }
+
+    public function getCustomGetAttribute()
+    {
+        return "custom getter result";
+    }
+
+    public function setCustomSetAttribute( $value )
+    {
+        $this->setJsonAttribute($this->jsonAttributes['custom_set'], 'custom_set', "custom {$value}");
+    }
 }

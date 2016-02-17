@@ -208,17 +208,17 @@ trait Json
         $jsonPattern  = '/' . implode('|', self::$jsonOperators) . '/' ;
 
         // Test for JSON operators and reduce to end element
-        $isJson = false;
+        $containsJsonOperator = false;
 
         if (preg_match($jsonPattern, $key)) {
             $elems = preg_split($jsonPattern, $key);
             $key = end($elems);
             $key = str_replace([">", "'"], "", $key);
 
-            $isJson = true;
+            $containsJsonOperator = true;
         }
 
-        if (array_key_exists($key, $this->jsonAttributes) != false) {
+        if ( !parent::hasGetMutator($key) && array_key_exists($key, $this->jsonAttributes) != false) {
 
             // Get the content of the column associated with this JSON
             // attribute and parse it into an object
@@ -246,7 +246,7 @@ trait Json
                 return null;
             }
         }
-        elseif ($isJson) {
+        elseif ($containsJsonOperator) {
             return null;
         }
 
@@ -262,7 +262,7 @@ trait Json
      */
     public function setAttribute($key, $value)
     {
-        if (array_key_exists($key, $this->jsonAttributes) !== false) {
+        if (array_key_exists($key, $this->jsonAttributes) !== false && !parent::hasSetMutator($key)) {
             $this->setJsonAttribute($this->jsonAttributes[$key], $key, $value);
             return;
         }

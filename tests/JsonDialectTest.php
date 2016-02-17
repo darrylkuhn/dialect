@@ -178,4 +178,48 @@ class JsonDialectTest extends PHPUnit_Framework_TestCase
         // Execute the hint call
         $mock->addHintedAttributes();
     }
+
+    /**
+     * Test the ability to allow models to provide their own custom attribute
+     * getters for json attributes
+     */
+    public function testCustomGetter()
+    {
+        // Mock the model with data
+        $mock = new MockJsonDialectModel;
+        $mock->hintJsonStructure( 'foo', json_encode(['custom_get'=>null]) );
+
+        // Execute the hint call
+        $mock->addHintedAttributes();
+
+        // Assert that the column were properly parsed and various bits have
+        // been set on the model
+        $this->assertTrue($mock->hasGetMutator('custom_get'));
+        $this->assertEquals($mock->custom_get, 'custom getter result');
+    }
+
+    /**
+     * Test the ability to allow models to provide their own custom attribute
+     * getters for json attributes
+     */
+    public function testCustomSetter()
+    {
+        // Mock the model with data
+        $mock = new MockJsonDialectModel;
+        $mock->hintJsonStructure( 'foo', json_encode(['custom_set'=>null]) );
+
+        // Execute the hint call
+        $mock->addHintedAttributes();
+
+        // Assert that the column were properly parsed and various bits have
+        // been set on the model
+        $this->assertTrue($mock->hasSetMutator('custom_set'));
+
+        // Set a value
+        $mock->custom_set = 'value';
+
+        // Assert that the attribute was mutated by the mutator on our mock
+        // model
+        $this->assertEquals($mock->custom_set, 'custom value');
+    }
 }
