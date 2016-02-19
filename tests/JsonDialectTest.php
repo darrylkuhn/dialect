@@ -104,6 +104,27 @@ class JsonDialectTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Assert that JSON array attributes can be set through mutators
+     */
+    public function testSetArrayAttribute()
+    {
+        // Mock the model with data
+        $mock = new MockJsonDialectModel;
+        $mock->hintJsonStructure( 'testColumn', json_encode(['foo'=>null]) );
+
+        // Execute the hint call
+        $mock->addHintedAttributes();
+
+        $mock->foo = ['bar','baz'];
+
+        // Assert that the column were properly parsed and various bits have
+        // been set on the model
+        $this->assertEquals('array', gettype($mock->foo));
+        $this->assertEquals(2, count($mock->foo) );
+        $this->assertEquals('bar', $mock->foo[0] );
+    }
+
+    /**
      * Assert that attributes with JSON operators are properly recognized as JSON
      * attributes
      */
@@ -139,7 +160,7 @@ class JsonDialectTest extends PHPUnit_Framework_TestCase
         $mock->foo = 'bar';
 
         // assert that the column has been set properly
-        $this->assertEquals( $mock->foo, 'bar' );
+        $this->assertEquals( 'bar', $mock->foo );
         $this->assertEquals( $mock->testColumn, json_encode(['foo'=>'bar']) );
     }
 

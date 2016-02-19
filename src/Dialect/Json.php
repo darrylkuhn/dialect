@@ -281,18 +281,29 @@ trait Json
     public function setJsonAttribute($attribute, $key, $value)
     {
         // Pull the attribute and decode it
-        $obj = json_decode( $this->{$attribute} );
+        $decoded = json_decode( $this->{$attribute} );
 
-        // It's possible the attribute doesn't exist yet (since we can hint at
-        // structure). In that case we build an object to set values on as a
-        // starting point
-        if ( $obj === null ) {
-            $obj = json_decode( '{}' );
+        switch( gettype($decoded) )
+        {
+            // It's possible the attribute doesn't exist yet (since we can hint at
+            // structure). In that case we build an object to set values on as a
+            // starting point
+            case "NULL":
+                $decoded = json_decode( '{}' );
+                $decoded->$key = $value;
+                break;
+
+            case "array":
+                $decoded[$key] = $value;
+                break;
+
+            default:
+                $decoded->$key = $value;
+                break;
         }
 
-        $obj->$key = $value;
         $this->flagJsonAttribute($key, $attribute);
-        $this->{$attribute} = json_encode($obj);
+        $this->{$attribute} = json_encode($decoded);
         return;
     }
 
