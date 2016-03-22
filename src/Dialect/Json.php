@@ -1,11 +1,13 @@
-<?php namespace Eloquent\Dialect;
+<?php
+
+namespace Eloquent\Dialect;
 
 trait Json
 {
     /**
      * List of known PSQL JSON operators. This is used when determining if
      * a column reference matches that of a JSON pattern (e.g.
-     * test_column->>'value')
+     * test_column->>'value').
      *
      * @var array
      */
@@ -13,13 +15,13 @@ trait Json
         '->',
         '->>',
         '#>',
-        '#>>' ];
+        '#>>', ];
 
     /**
      * Holds the map of attributes and the JSON colums they are stored in. This
      * will take the form of:
      *  [ 'json_element_1' => 'original_column',
-     *    'json_element_2' => 'original_column' ]
+     *    'json_element_2' => 'original_column' ].
      *
      * @var array
      */
@@ -27,7 +29,7 @@ trait Json
 
     /**
      * Holds a list of column names and the structure they *may* contain (e.g.
-     * ['json_column' => "{'foo':null}"]
+     * ['json_column' => "{'foo':null}"].
      *
      * @var array
      */
@@ -39,7 +41,7 @@ trait Json
      * parameters as top level paremters on the model. Set this parameter to
      * true if you want to change that behavior.
      *
-     * @var boolean
+     * @var bool
      */
     private $showJsonColumns = false;
 
@@ -48,7 +50,7 @@ trait Json
      * model using toArray() or toJson(). Set this parameter to false if you
      * want to change that behavior.
      *
-     * @var boolean
+     * @var bool
      */
     private $showJsonAttributes = true;
 
@@ -56,8 +58,9 @@ trait Json
      * Create a new model instance that is existing.
      * Overrides parent to set Json columns.
      *
-     * @param  array  $attributes
-     * @param  string|null  $connection
+     * @param array       $attributes
+     * @param string|null $connection
+     *
      * @return static
      */
     public function newFromBuilder($attributes = array(), $connection = null)
@@ -65,19 +68,18 @@ trait Json
         $model = parent::newFromBuilder($attributes, $connection);
         $model->inspectJsonColumns();
         $model->addHintedAttributes();
+
         return $model;
     }
 
     /**
      * Decodes each of the declared JSON attributes and records the attributes
-     * on each
-     *
-     * @return void
+     * on each.
      */
     public function inspectJsonColumns()
     {
         foreach ($this->jsonColumns as $col) {
-            if ( !$this->showJsonColumns ) {
+            if (!$this->showJsonColumns) {
                 $this->hidden[] = $col;
             }
             $obj = json_decode($this->$col);
@@ -85,7 +87,7 @@ trait Json
             if (is_object($obj)) {
                 foreach ($obj as $key => $value) {
                     $this->flagJsonAttribute($key, $col);
-                    if ( $this->showJsonAttributes ) {
+                    if ($this->showJsonAttributes) {
                         $this->appends[] = $key;
                     }
                 }
@@ -97,18 +99,16 @@ trait Json
      * Schema free data architecture give us tons of flexibility (yay) but
      * makes it hard to inspect a structure and build getters/setters.
      * Therefore you can "hint" the structure to make life easier.
-     *
-     * @return void
      */
     public function addHintedAttributes()
     {
         foreach ($this->hintedJsonAttributes as $col => $structure) {
-            if ( !$this->showJsonColumns ) {
+            if (!$this->showJsonColumns) {
                 $this->hidden[] = $col;
             }
 
             if (json_decode($structure) === null) {
-                throw new InvalidJsonException;
+                throw new InvalidJsonException();
             }
 
             $obj = json_decode($structure);
@@ -116,7 +116,7 @@ trait Json
             if (is_object($obj)) {
                 foreach ($obj as $key => $value) {
                     $this->flagJsonAttribute($key, $col);
-                    if ( $this->showJsonAttributes ) {
+                    if ($this->showJsonAttributes) {
                         $this->appends[] = $key;
                     }
                 }
@@ -125,17 +125,17 @@ trait Json
     }
 
     /**
-     * Sets a hint for a given column
+     * Sets a hint for a given column.
      *
-     * @param  string $column name of column that we're hinting
-     * @param  string $structure json encoded structure
-     * @return void
+     * @param string $column    name of column that we're hinting
+     * @param string $structure json encoded structure
+     *
      * @throws InvalidJsonException
      */
-    public function hintJsonStructure( $column, $structure )
+    public function hintJsonStructure($column, $structure)
     {
         if (json_decode($structure) === null) {
-            throw new InvalidJsonException;
+            throw new InvalidJsonException();
         }
 
         $this->hintedJsonAttributes[$column] = $structure;
@@ -147,12 +147,10 @@ trait Json
     }
 
     /**
-     * Record that a given JSON element is found on a particular column
+     * Record that a given JSON element is found on a particular column.
      *
      * @param string $key attribute name within the JSON column
      * @param string $col name of JSON column
-     *
-     * @return void
      */
     public function flagJsonAttribute($key, $col)
     {
@@ -162,12 +160,13 @@ trait Json
     /**
      * Include JSON column in the list of attributes that have a get mutator.
      *
-     * @param  string  $key
+     * @param string $key
+     *
      * @return bool
      */
     public function hasGetMutator($key)
     {
-        $jsonPattern  = '/' . implode('|', self::$jsonOperators) . '/' ;
+        $jsonPattern = '/'.implode('|', self::$jsonOperators).'/';
 
         if (array_key_exists($key, $this->jsonAttributes) !== false) {
             return true;
@@ -192,20 +191,23 @@ trait Json
     {
         $attributes = parent::getMutatedAttributes();
         $jsonAttributes = array_keys($this->jsonAttributes);
+
         return array_merge($attributes, $jsonAttributes);
     }
 
     /**
-     * Check if the key is a known json attribute and return that value
+     * Check if the key is a known json attribute and return that value.
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed  $value
+     *
      * @return mixed
-     * @throws  InvalidJsonException
+     *
+     * @throws InvalidJsonException
      */
     protected function mutateAttribute($key, $value)
     {
-        $jsonPattern  = '/' . implode('|', self::$jsonOperators) . '/' ;
+        $jsonPattern = '/'.implode('|', self::$jsonOperators).'/';
 
         // Test for JSON operators and reduce to end element
         $containsJsonOperator = false;
@@ -213,12 +215,12 @@ trait Json
         if (preg_match($jsonPattern, $key)) {
             $elems = preg_split($jsonPattern, $key);
             $key = end($elems);
-            $key = str_replace([">", "'"], "", $key);
+            $key = str_replace(['>', "'"], '', $key);
 
             $containsJsonOperator = true;
         }
 
-        if ( !parent::hasGetMutator($key) && array_key_exists($key, $this->jsonAttributes) != false) {
+        if (!parent::hasGetMutator($key) && array_key_exists($key, $this->jsonAttributes) != false) {
 
             // Get the content of the column associated with this JSON
             // attribute and parse it into an object
@@ -232,22 +234,20 @@ trait Json
             // a parse error. To distenguish the two states see if the original
             // value was null (indicating there was nothing there to parse in
             // the first place)
-            if ( $value !== null && $obj === null ) {
-                throw new InvalidJsonException;
+            if ($value !== null && $obj === null) {
+                throw new InvalidJsonException();
             }
 
             // Again it's possible the key will be in the jsonAttributes array
             // (having been hinted) but not present on the actual record.
             // Therefore test that the key is set before returning.
-            if ( isset($obj->$key) ) {
+            if (isset($obj->$key)) {
                 return $obj->$key;
+            } else {
+                return;
             }
-            else {
-                return null;
-            }
-        }
-        elseif ($containsJsonOperator) {
-            return null;
+        } elseif ($containsJsonOperator) {
+            return;
         }
 
         return parent::mutateAttribute($key, $value);
@@ -256,14 +256,14 @@ trait Json
     /**
      * Set a given attribute on the known JSON elements.
      *
-     * @param  string  $key
-     * @param  mixed   $value
-     * @return void
+     * @param string $key
+     * @param mixed  $value
      */
     public function setAttribute($key, $value)
     {
         if (array_key_exists($key, $this->jsonAttributes) !== false && !parent::hasSetMutator($key)) {
             $this->setJsonAttribute($this->jsonAttributes[$key], $key, $value);
+
             return;
         }
 
@@ -275,25 +275,23 @@ trait Json
      *
      * @param string $attribute
      * @param string $key
-     * @param mixed $value
-     * @return void
+     * @param mixed  $value
      */
     public function setJsonAttribute($attribute, $key, $value)
     {
         // Pull the attribute and decode it
-        $decoded = json_decode( $this->{$attribute} );
+        $decoded = json_decode($this->{$attribute});
 
-        switch( gettype($decoded) )
-        {
+        switch (gettype($decoded)) {
             // It's possible the attribute doesn't exist yet (since we can hint at
             // structure). In that case we build an object to set values on as a
             // starting point
-            case "NULL":
-                $decoded = json_decode( '{}' );
+            case 'NULL':
+                $decoded = json_decode('{}');
                 $decoded->$key = $value;
                 break;
 
-            case "array":
+            case 'array':
                 $decoded[$key] = $value;
                 break;
 
@@ -304,25 +302,26 @@ trait Json
 
         $this->flagJsonAttribute($key, $attribute);
         $this->{$attribute} = json_encode($decoded);
+
         return;
     }
 
     /**
      * Add json attributes to the list of things that have changed (when
-     * they've changed)
+     * they've changed).
      *
-     * @return Array
+     * @return array
      */
-    public function getDirty( $includeJson = false )
+    public function getDirty($includeJson = false)
     {
         $dirty = parent::getDirty();
 
-        if ( !$includeJson ) {
+        if (!$includeJson) {
             return $dirty;
         }
 
         foreach (array_unique($this->jsonAttributes) as $attribute) {
-            $originals[$attribute] = json_decode(array_get($this->original,$attribute,'null'), true);
+            $originals[$attribute] = json_decode(array_get($this->original, $attribute, 'null'), true);
         }
 
         foreach ($this->jsonAttributes as $jsonAttribute => $jsonColumn) {
@@ -339,12 +338,14 @@ trait Json
      * Allows you to specify if the actual JSON column housing the attributes
      * should be shown on toArray() and toJson() calls. Set this value in the
      * models constructor (to make sure it is set before newFromBuilder() is
-     * called). This is false by default
+     * called). This is false by default.
      *
-     * @param  boolean $show
-     * @return boolean
+     * @param bool $show
+     *
+     * @return bool
      */
-    public function showJsonColumns( $show ) {
+    public function showJsonColumns($show)
+    {
         return $this->showJsonColumns = $show;
     }
 
@@ -352,12 +353,14 @@ trait Json
      * Allows you to specify if the attributes within various json columns
      * should be shown on toArray() and toJson() calls. Set this value in the
      * models constructor (to make sure it is set before newFromBuilder() is
-     * called). This is true by default
+     * called). This is true by default.
      *
-     * @param  boolean show
-     * @return boolean
+     * @param  bool show
+     *
+     * @return bool
      */
-    public function showJsonAttributes( $show ) {
+    public function showJsonAttributes($show)
+    {
         return $this->showJsonAttributes = $show;
     }
 }
