@@ -82,6 +82,24 @@ class JsonDialectTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Assert that no exception is thrown when given null json
+     */
+    public function testNullJsonAttribute()
+    {
+        // Mock the model with data
+        $mock = new MockJsonDialectModel;
+        $mock->hintJsonStructure( 'testColumn', json_encode(['foo'=>null]) );
+
+        // Set testColumn to 'null'
+        $mock->setAttribute('testColumn', 'null');
+        $this->assertNull($mock->foo);
+
+        // Set testColumn to null
+        $mock->setAttribute('testColumn', null);
+        $this->assertNull($mock->foo);
+    }
+
+    /**
      * Assert that JSON attributes can be set through mutators
      */
     public function testSetAttribute()

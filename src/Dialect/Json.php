@@ -231,10 +231,10 @@ trait Json
             // that we've only hinted at an attribute and the column that will
             // hold that attribute is actually null. This isn't really a parse
             // error though the json_encode method will return null (just like)
-            // a parse error. To distenguish the two states see if the original
+            // a parse error. To distinguish the two states see if the original
             // value was null (indicating there was nothing there to parse in
             // the first place)
-            if ($value !== null && $obj === null) {
+            if ( !($value === 'null' || $value === null) && $obj === null ) {
                 throw new InvalidJsonException();
             }
 
