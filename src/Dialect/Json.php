@@ -82,7 +82,7 @@ trait Json
             if (!$this->showJsonColumns) {
                 $this->hidden[] = $col;
             }
-            $obj = json_decode($this->$col);
+            $obj = json_decode($this->attributes[$col]);
 
             if (is_object($obj)) {
                 foreach ($obj as $key => $value) {
