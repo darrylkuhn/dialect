@@ -83,15 +83,18 @@ trait Json
                 $this->hidden[] = $col;
             }
 
-            if(isset($this->attributes[$col])) {
+            if(array_key_exists($col, $this->attributes)) {
                 $obj = json_decode($this->attributes[$col]);
+            }
+            else {
+                $obj = json_decode($this->$col);
+            }
 
-                if (is_object($obj)) {
-                    foreach ($obj as $key => $value) {
-                        $this->flagJsonAttribute($key, $col);
-                        if ($this->showJsonAttributes) {
-                            $this->appends[] = $key;
-                        }
+            if (is_object($obj)) {
+                foreach ($obj as $key => $value) {
+                    $this->flagJsonAttribute($key, $col);
+                    if ($this->showJsonAttributes) {
+                        $this->appends[] = $key;
                     }
                 }
             }
