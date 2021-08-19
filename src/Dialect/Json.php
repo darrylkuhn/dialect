@@ -2,6 +2,8 @@
 
 namespace Eloquent\Dialect;
 
+use Illuminate\Support\Arr;
+
 trait Json
 {
     /**
@@ -327,12 +329,12 @@ trait Json
         }
 
         foreach (array_unique($this->jsonAttributes) as $attribute) {
-            $originals[$attribute] = json_decode(array_get($this->original, $attribute, 'null'), true);
+            $originals[$attribute] = json_decode(Arr::get($this->original, $attribute, 'null'), true);
         }
 
         foreach ($this->jsonAttributes as $jsonAttribute => $jsonColumn) {
             if ($this->$jsonAttribute !== null &&
-                $this->$jsonAttribute !== array_get($originals[$jsonColumn], $jsonAttribute)) {
+                $this->$jsonAttribute !== Arr::get($originals[$jsonColumn], $jsonAttribute)) {
                 $dirty[$jsonAttribute] = json_encode($this->$jsonAttribute);
             }
         }
